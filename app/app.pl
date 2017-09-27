@@ -21,12 +21,13 @@
     	    $search = "";
     	}
 
-        #create table if it doesn't exists
-        createTable();
+
 
         #execute insert and select based on request parameters (if there are form inputs then execute insert and redirect, else return JSON based on search text)
     	if(defined $date and defined $time and defined $description){
             my $db = connect_db();
+               $db->do('CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY ,date TEXT, time TEXT, description TEXT NOT NULL)');
+
             my $sql = 'insert into appointments (date, time, description) values (?, ?, ?)';
             my $sth = $db->prepare($sql) or die $db->errstr;
             $sth->execute(
@@ -42,6 +43,7 @@
 
     	}else{
             my $db = connect_db();
+               $db->do('CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY ,date TEXT, time TEXT, description TEXT NOT NULL)');
             my $sql = "select date, time, description from appointments WHERE description LIKE '%$search%' order by date desc;";
             my $sth = $db->prepare($sql) or die $db->errstr;
             $sth->execute or die $sth->errstr;
@@ -56,7 +58,6 @@
              #return JSON
              print to_json(\@output);
     	}
-
 
 #subroutine for database connection
   	sub connect_db {
