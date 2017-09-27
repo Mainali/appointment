@@ -7,6 +7,7 @@
   	use Data::Dumper;
     use JSON;
     use CGI::Carp qw(warningsToBrowser fatalsToBrowser);
+    use constant APP_URL => "http://localhost:8080/appointment/index.html";
 
     print CGI::header();
     my $cgi = CGI->new;
@@ -34,11 +35,10 @@
                $description
             ) or die $sth->errstr;
 
-             # redirect to application page
+            $db->disconnect;
 
-             my $url="http://localhost:8080/appointment/index.html";
-             my $t=0; # time until redirect activates
-             print "<META HTTP-EQUIV=refresh CONTENT=\"$t;URL=$url\">\n";
+             # redirect to application homepage url
+             print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=".APP_URL."\">\n";
 
     	}else{
             my $db = connect_db();
@@ -51,7 +51,9 @@
              while (my $row = $sth->fetchrow_hashref) {
                 push @output, $row;
              }
+             $db->disconnect;
 
+             #return JSON
              print to_json(\@output);
     	}
 
@@ -67,4 +69,5 @@
     sub createTable{
                 my $db = connect_db();
                 $db->do('CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY ,date TEXT, time TEXT, description TEXT NOT NULL)');
+                $db->disconnect;
             }
